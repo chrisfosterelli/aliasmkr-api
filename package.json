@@ -19,10 +19,10 @@
     "url": "https://github.com/chrisfosterelli/aliasmkr/issues"
   },
   "homepage": "https://github.com/chrisfosterelli/aliasmkr#readme",
-  "devDependencies": {
-    "babel-cli": "^6.8.0"
-  },
   "dependencies": {
     "express": "^4.13.4"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.8.0"
   }
 }
