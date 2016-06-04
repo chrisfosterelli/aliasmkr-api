@@ -3,14 +3,15 @@
  * Token router
  */
 
-const bcrypt = require('bcrypt')
-const express = require('express')
-const Joi = require('joi')
-const jwt = require('../jwt')
+const bcrypt   = require('bcrypt')
+const express  = require('express')
+const Joi      = require('joi')
+const jwt      = require('../jwt')
 const validate = require('../validate')
 
 const router = express()
-router.post('/', validate(schema), post)
+router.post('/', validate.body(schema))
+router.post('/', post)
 module.exports = router
 
 const schema = Joi.object().keys({

@@ -4,18 +4,21 @@
  */
 
 const express = require('express')
-const r = require('../r')
+const r       = require('../rethink')
 
 const router = express()
 router.all(jwt.verify())
+router.get('/', validate.query(schema))
 router.get('/', get)
 module.exports = router
+
+const schema = Joi.object().keys({
+  user : Joi.string().guid().required()
+})
 
 function get(req, res, next) {
   const index = 'user'
   const user = req.query.user
-  const err = 'You must specify a user'
-  if (!user) return next(new HttpError(400, err))
   r.table('Domain')
   .getAll(user, { index })
   .then(domains => res.send(domains))

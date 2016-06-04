@@ -5,11 +5,18 @@
 
 const Joi = require('joi')
 
-module.exports = validate
+module.exports = { body, query }
 
-function validate(schema) {
+function body(schema) {
   return (req, res, next) => {
     const opts = { abortEarly : false }
     Joi.validate(req.body, schema, opts, next)
+  }
+}
+
+function query(schema) {
+  return (req, res, next) => {
+    const opts = { abortEarly : false }
+    Joi.validate(req.query, schema, opts, next)
   }
 }
