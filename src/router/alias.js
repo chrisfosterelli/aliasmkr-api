@@ -3,21 +3,26 @@
  * Alias router
  */
 
-const express = require('express')
-const r       = require('../rethink')
-
-const router = express()
-router.all(jwt.verify())
-router.get('/', validate.query(schema))
-router.get('/', permit)
-router.get('/', get)
-module.exports = router
+const express  = require('express')
+const Joi      = require('joi')
+const jwt      = require('../jwt')
+const r        = require('../rethink')
+const validate = require('../validate')
 
 const schema = Joi.object().keys({
   domain : Joi.string().guid().required()
 })
 
-function permit(req, res, next) {
+const router = express()
+router.use(jwt.verify())
+router.get('/', validate.query(schema))
+router.get('/', permitDomain)
+router.get('/', get)
+router.get('/:alias', permitId)
+router.get('/:alias', getById)
+module.exports = router
+
+function permitDomain(req, res, next) {
   r.table('Domain')
   .get(req.query.domain)('user')
   .then(user => {
@@ -34,5 +39,25 @@ function get(req, res, next) {
   r.table('Alias')
   .getAll(domain, { index })
   .then(aliases => res.send(aliases))
+  .catch(err => next(err))
+}
+
+function permitId(req, res, next) {
+  const domain = r.table('Alias')
+  .get(req.params.alias)('domain')
+  r.table('Domain')
+  .get(domain)('user')
+  .then(user => {
+    if (user == req.user.id) return next(); 
+    const err = 'You must own this domain'
+    return next(new HttpError(403, err))
+  })
+  .catch(err => next(err))
+}
+
+function getById(req, res, next) {
+  r.table('Alias')
+  .get(req.params.alias)
+  .then(alias => res.send(alias))
   .catch(err => next(err))
 }

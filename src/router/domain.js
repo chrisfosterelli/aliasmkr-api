@@ -3,18 +3,21 @@
  * Domain router
  */
 
-const express = require('express')
-const r       = require('../rethink')
-
-const router = express()
-router.all(jwt.verify())
-router.get('/', validate.query(schema))
-router.get('/', get)
-module.exports = router
+const express  = require('express')
+const Joi      = require('joi')
+const r        = require('../rethink')
+const jwt      = require('../jwt')
+const validate = require('../validate')
 
 const schema = Joi.object().keys({
   user : Joi.string().guid().required()
 })
+
+const router = express()
+router.use(jwt.verify())
+router.get('/', validate.query(schema))
+router.get('/', get)
+module.exports = router
 
 function get(req, res, next) {
   const index = 'user'

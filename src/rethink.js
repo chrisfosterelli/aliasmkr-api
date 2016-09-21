@@ -15,5 +15,4 @@ const host = parsed.hostname
 const port = parsed.port
 
 const r = rethink({ host, port, db })
-export default r
-
+module.exports = r
