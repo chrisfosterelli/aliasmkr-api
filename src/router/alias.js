@@ -20,6 +20,8 @@ router.get('/', permitDomain)
 router.get('/', get)
 router.get('/:alias', permitId)
 router.get('/:alias', getById)
+router.post('/:alias/outgoing', permitId)
+router.post('/:alias/outgoing', addOutgoing)
 module.exports = router
 
 function permitDomain(req, res, next) {
@@ -59,5 +61,22 @@ function getById(req, res, next) {
   r.table('Alias')
   .get(req.params.alias)
   .then(alias => res.send(alias))
+  .catch(err => next(err))
+}
+
+function addOutgoing(req, res, next) {
+  r.table('Alias')
+  .get(req.params.alias)
+  .then(alias => {
+    alias.outgoing.append(req.body)
+    return mailgun.updateAlias(alias)
+    .then(alias => alias.outgoing)
+  })
+  .then(outgoing => {
+    return r.table('Alias')
+    .get(req.params.alias)
+    .update({ outgoing })
+  })
+  .then(() => res.send(req.body))
   .catch(err => next(err))
 }
