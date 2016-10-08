@@ -3,6 +3,7 @@
  * Alias router
  */
 
+const _        = require('lodash')
 const express  = require('express')
 const Joi      = require('joi')
 const jwt      = require('../jwt')
@@ -25,7 +26,9 @@ router.get('/:alias', permitId)
 router.get('/:alias', getById)
 router.post('/:alias/outgoing', validate.body(updateSchema))
 router.post('/:alias/outgoing', permitId)
-router.post('/:alias/outgoing', addOutgoing)
+router.post('/:alias/outgoing', createOutgoing)
+router.delete('/:alias/outgoing/:email', permitId)
+router.delete('/:alias/outgoing/:email', deleteOutgoing)
 module.exports = router
 
 function permitDomain(req, res, next) {
@@ -68,7 +71,7 @@ function getById(req, res, next) {
   .catch(err => next(err))
 }
 
-function addOutgoing(req, res, next) {
+function createOutgoing(req, res, next) {
   const email = req.body
   r.table('Alias')
   .get(req.params.alias)
@@ -83,6 +86,25 @@ function addOutgoing(req, res, next) {
     .get(req.params.alias)
     .update({ outgoing })
   })
-  .then(() => res.send(email))
+  .then(() => res.status(201).send(email))
+  .catch(err => next(err))
+}
+
+function deleteOutgoing(req, res, next) {
+  const email = req.params.email
+  r.table('Alias')
+  .get(req.params.alias)
+  .then(alias => {
+    _.pull(alias.outgoing, email)
+    console.log('MG: Updating', alias.id)
+    return mailgun.updateAlias(alias)
+    .then(alias => alias.outgoing)
+  })
+  .then(outgoing => {
+    return r.table('Alias')
+    .get(req.params.alias)
+    .update({ outgoing })
+  })
+  .then(() => res.send())
   .catch(err => next(err))
 }
